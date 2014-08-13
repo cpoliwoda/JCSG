@@ -32,7 +32,7 @@ public class FractalStructure {
     // two subFractalStructures (position parent edge and center)
     int crossConnectionsRate = 25; //percent
     // maxAngleForCrossConections dominates crossConnectionsRate
-    int maxAngleForCrossConections = 45;//degree
+    int maxAngleForCrossConections = 65;//degree
 
     //the distance between groundCenter and topCenter decides about the height of the tu
     //the center of the bottom polygon of the first FractalStructure (level=0) / tube
@@ -52,20 +52,20 @@ public class FractalStructure {
     //how many recursion should be done before drawing (level 0), level 2 means draw after 2 refinments
     int level = 0;
 
-    static {
-        thicknessList = new ArrayList<>();
-        thicknessList.add(0.01);//level 0
-        thicknessList.add(0.1);//level 1
-        thicknessList.add(4.0);//level 2
-        thicknessList.add(80.0);//level 3
-        thicknessList.add(160.0);//level 4
-    }
-
     //we need two vectors which span the plane where the circle lies in       
     Vector3d orthoVecToRotAxis1 = null;
     Vector3d orthoVecToRotAxis2 = null;
     //if dot of two vectors is lower than threshhold we assume they are orthogonal
     double orthoThreshhold = 1E-16;
+
+    protected static void setThicknesses(Double... thicknesses) {
+
+        thicknessList = new ArrayList<>();
+
+        for (int i = 0; i < thicknesses.length; i++) {
+            thicknessList.add(thicknesses[i]);
+        }
+    }
 
     /**  
      *
@@ -95,8 +95,11 @@ public class FractalStructure {
             int numberOfGroundEdges, double thickness, int level,
             Vector3d orthoVecToRotAxis1, Vector3d orthoVecToRotAxis2) {
 
-        NextThickness = thickness / NextThicknessDivider;
-
+        if (thicknessList.size() > level) {
+            NextThickness = thicknessList.get(level);
+        } else {
+            NextThickness = thickness / NextThicknessDivider;
+        }
         if (numberOfGroundEdges < 3) {
             numberOfGroundEdges = 3;
             System.err.println("numberOfGroundEdges need to be at least 3 and is set therefore to 3.");
@@ -163,9 +166,9 @@ public class FractalStructure {
         double radians = 0;// needed for cos & sin
         double radius = thickness / 2.0;  // fallback rule if the user did not give a thickness for a level
 
-        try {
+        if (thicknessList.size() > level) {
             radius = thicknessList.get(level);
-        } catch (Exception e) {
+        } else {
             System.out.println("no entry found in thicknessList for level = " + level + ", therefore rule used: radius = thickness / 2.0");
         }
 
@@ -421,7 +424,7 @@ public class FractalStructure {
             //check maxAngleForCrossConections for angle a and recalculate stepsize until angle
             while (angle >= maxAngleForCrossConections) {
                 stepSizeOnConnectionLine = stepSizeOnConnectionLineHalf;
-                stepSizeOnConnectionLineHalf /= 2.0;
+                stepSizeOnConnectionLineHalf = stepSizeOnConnectionLineHalf * 0.75;
 
                 helpCenterPoint = connectionLineVectorNormalized.times(stepSizeOnConnectionLineHalf).plus(centerGroundPoint);
                 hypothenuse = helpCenterPoint.minus(tmpGroundPoint).magnitude();
@@ -499,9 +502,12 @@ public class FractalStructure {
 
     public static void main(String[] args) throws IOException {
 
-        CSG csg = new FractalStructure(Vector3d.ZERO, Vector3d.Z_ONE.times(1), 4, 15, 2,
-                                Vector3d.X_ONE, Vector3d.Y_ONE
-//                null, null
+        // level 0,1,2,3,....
+        FractalStructure.setThicknesses(0.01, 0.1, 1.0, 3.50, 9.0);
+
+        CSG csg = new FractalStructure(Vector3d.ZERO, Vector3d.Z_ONE.times(3), 4, 15, 3,
+                Vector3d.X_ONE, Vector3d.Y_ONE
+        //                null, null
         ).toCSG();
 //        CSG csg = new FractalStructure(Vector3d.ZERO, Vector3d.Z_ONE, 7, 2, 1).toCSG();
 //        CSG csg = new FractalStructure(new Vector3d(-1, -1, -1), new Vector3d(1, 1, 1), 7, 4, 3).toCSG();
