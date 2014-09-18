@@ -22,7 +22,7 @@ import java.util.logging.Logger;
  *
  * @author Michael Hoffer &lt;info@michaelhoffer.de&gt;
  */
-public class Möbiusband {
+public class Moebiusband {
 
     public CSG toCSG() {
 
@@ -77,7 +77,7 @@ public class Möbiusband {
 
         System.out.println("RUNNING");
 
-        FileUtil.write(Paths.get("möbiusband.stl"), new Möbiusband().toCSG().toStlString());
+        FileUtil.write(Paths.get("möbiusband.stl"), new Moebiusband().toCSG().toStlString());
 
     }
 }
